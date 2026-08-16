@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +10,7 @@ module.exports = {
         const tasks = interaction.client.tasks;
 
         if (tasks.length === 0) {
-            return interaction.reply({ content: 'No pending tasks! 🎉', ephemeral: true });
+            return interaction.reply({ content: 'No pending tasks! 🎉', flags: MessageFlags.Ephemeral });
         }
         
         let taskList = tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,7 +19,7 @@ module.exports = {
             const completed = tasks.splice(index, 1);
             await interaction.reply(`🎉 Task completed: "${completed}"`);
         } else {
-            await interaction.reply({ content: 'Invalid task number! Check your list with `/tasks`', ephemeral: true });
+            await interaction.reply({ content: 'Invalid task number! Check your list with `/tasks`', flags: MessageFlags.Ephemeral });
         }
     },
 };
