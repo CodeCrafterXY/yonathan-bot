@@ -38,8 +38,8 @@ client.once('ready', async () => {
         console.error('Failed to register commands:', error);
     }
 
-    // Daily Reminder Cron Job
-    cron.schedule('0 9 * * *', () => {
+    // We attach the job to client.reminderJob so we can stop it later
+    client.reminderJob = cron.schedule('0 9 * * *', () => {
         const channel = client.channels.cache.get(process.env.CHANNEL_ID);
         if (channel && client.tasks.length > 0) {
             let taskList = client.tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
