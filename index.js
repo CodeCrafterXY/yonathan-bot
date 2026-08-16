@@ -45,6 +45,8 @@ client.once('ready', async () => {
             let taskList = client.tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
             channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
         }
+    }, {
+        timezone: "Asia/Jakarta" // This forces the cron job to run in WIB
     });
 });
 

@@ -34,6 +34,8 @@ module.exports = {
                 let taskList = interaction.client.tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
                 channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
             }
+        }, {
+            timezone: "Asia/Jakarta" // Ensure the updated time also uses WIB
         });
 
         // 3. Format the time nicely for the reply (e.g., turns 9:5 into 09:05)
