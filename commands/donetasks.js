@@ -15,11 +15,14 @@ module.exports = {
         const index = interaction.options.getInteger('number') - 1;
 
         if (index >= 0 && index < tasks.length) {
-
             const completed = tasks.splice(index, 1);
             await interaction.reply(`🎉 Task completed: "${completed}"`);
         } else {
-            await interaction.reply({ content: 'Invalid task number! Check your list with `/tasks`', flags: MessageFlags.Ephemeral });
+            // Replaced ephemeral: true with flags
+            await interaction.reply({ 
+                content: 'Invalid task number! Check your list with `/tasks`', 
+                flags: MessageFlags.Ephemeral 
+            });
         }
     },
 };
