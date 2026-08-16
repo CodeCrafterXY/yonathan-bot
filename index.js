@@ -6,9 +6,11 @@ const cron = require('node-cron');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+// Attach our tasks array and commands collection to the client so files can access them
 client.tasks = []; 
 client.commands = new Collection();
 
+// Dynamically load command files
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -23,6 +25,7 @@ for (const file of commandFiles) {
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     
+    // Register commands to Discord API
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     try {
         const commandData = client.commands.map(c => c.data.toJSON());
@@ -35,6 +38,7 @@ client.once('ready', async () => {
         console.error('Failed to register commands:', error);
     }
 
+    // Daily Reminder Cron Job
     cron.schedule('0 9 * * *', () => {
         const channel = client.channels.cache.get(process.env.CHANNEL_ID);
         if (channel && client.tasks.length > 0) {
