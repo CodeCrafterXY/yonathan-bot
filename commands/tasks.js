@@ -22,7 +22,7 @@ module.exports = {
             // t.assigneeId might be null. This quick fallback prevents an ugly <@null> error.
             const mention = t.assigneeId ? `<@${t.assigneeId}>` : '*Legacy Task*';
             
-            return `${i + 1}. **${t.description}** ━━ 👤 ${mention}`;
+            return `${i + 1}. **${t.description}** --  👤 ${mention}`;
         }).join('\n\n');
         
         await interaction.reply(`📋 **All Server Tasks:**\n\n${taskList}`);
