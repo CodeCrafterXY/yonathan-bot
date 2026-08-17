@@ -7,12 +7,26 @@ module.exports = {
         .addStringOption(option =>
             option.setName('task')
                 .setDescription('The task description')
-                .setRequired(true)),
-                
+                .setRequired(true))
+        .addUserOption(option => 
+            option.setName('assignee')
+                .setDescription('The member you want to assign this task to')
+                .setRequired(false)
+        ),
     async execute(interaction) {
-        const task = interaction.options.getString('task');
+        const taskDesc = interaction.options.getString('task');
+        const assignee = interaction.options.getUser('assignee');
+
+        let finalTask = taskDesc;
+        if (assignee) {
+            finalTask = `${assignee} - ${taskDesc}`;
+        }
         // We'll attach our tasks array to the client object in index.js so all commands can access it
-        interaction.client.tasks.push(task); 
-        await interaction.reply({ content: `✅ Task added: "${task}"` });
+        interaction.client.tasks.push(finalTask);
+        if (assignee) {
+            await interaction.reply({ content: `✅ Task added and assigned to ${assignee}: "${taskDesc}"` });
+        } else {
+            await interaction.reply({ content: `✅ Task added: "${taskDesc}"` });
+        }
     },
 };
