@@ -42,7 +42,10 @@ client.once('ready', async () => {
     client.reminderJob = cron.schedule('0 9 * * *', () => {
         const channel = client.channels.cache.get(process.env.CHANNEL_ID);
         if (channel && client.tasks.length > 0) {
-            let taskList = client.tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
+            let taskList = client.tasks.map((t, i) => {
+                if (t.assigneeId) return `${i + 1}. <@${t.assigneeId}> - ${t.description}`;
+                return `${i + 1}. ${t.description}`;
+            }).join('\n');
             channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
         }
     }, {

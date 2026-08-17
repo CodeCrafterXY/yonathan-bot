@@ -17,7 +17,12 @@ module.exports = {
             });
         }
         
-        let taskList = tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
+        // Change this inside your tasks.js execute function:
+        let taskList = tasks.map((t, i) => {
+            if (t.assigneeId) return `${i + 1}. <@${t.assigneeId}> - ${t.description}`;
+            return `${i + 1}. ${t.description}`;
+        }).join('\n');
+        
         await interaction.reply(`📋 **Your Tasks:**\n${taskList}`);
     },
 };
