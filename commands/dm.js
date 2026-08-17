@@ -34,7 +34,7 @@ module.exports = {
 
         try {
             const recipient = await interaction.client.users.fetch(userId);
-            const dmContent = `📬 **New message from ${interaction.user.tag}:**\n\n${messageContent}`;
+            const dmContent = `${messageContent}`;
 
             await recipient.send(dmContent);
             
