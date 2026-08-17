@@ -15,7 +15,7 @@ module.exports = {
             return interaction.reply({ content: 'You have no assigned tasks! 🎉', flags: MessageFlags.Ephemeral });
         }
         
-        let taskList = myTasks.map(t => `${t.originalIndex}. ${t.description}`).join('\n');
+        let taskList = myTasks.map((t,i) => `${i + 1}. ${t.description}`).join('\n');
         await interaction.reply(`👤 **Your Assigned Tasks:**\n${taskList}`);
     },
 };
