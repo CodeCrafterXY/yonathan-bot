@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const cron = require('node-cron');
+const Task = require('../models/Task');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,18 +27,18 @@ module.exports = {
             interaction.client.reminderJob.stop();
         }
 
-        interaction.client.reminderJob = cron.schedule(`${minute} ${hour} * * *`, () => {
+        interaction.client.reminderJob = cron.schedule(`${minute} ${hour} * * *`, async () => {
             const channel = interaction.client.channels.cache.get(process.env.CHANNEL_ID);
-            if (channel && interaction.client.tasks.length > 0) {
-                let taskList = interaction.client.tasks.map((t, i) => {
+            const tasks = await Task.find().sort({ createdAt: 1 }); // Fetch from DB
+
+            if (channel && tasks.length > 0) {
+                let taskList = tasks.map((t, i) => {
                     if (t.assigneeId) return `${i + 1}. <@${t.assigneeId}> - ${t.description}`;
                     return `${i + 1}. ${t.description}`;
                 }).join('\n');
                 channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
             }
-        }, {
-            timezone: "Asia/Jakarta"
-        });
+        }, { timezone: "Asia/Jakarta" });
 
         const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         

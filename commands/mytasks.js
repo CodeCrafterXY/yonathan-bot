@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const Task = require('../models/Task');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,18 +7,12 @@ module.exports = {
         .setDescription('View tasks assigned specifically to you'),
         
     async execute(interaction) {
-        const tasks = interaction.client.tasks;
         const myId = interaction.user.id;
-        
-        const myTasks = tasks
-            .map((t, i) => ({ originalIndex: i + 1, ...t }))
-            .filter(t => t.assigneeId === myId);
+
+        const myTasks = await Task.find({ assigneeId: myId }).sort({ createdAt: 1 });
 
         if (myTasks.length === 0) {
-            return interaction.reply({ 
-                content: 'You have no assigned tasks! 🎉', 
-                flags: MessageFlags.Ephemeral 
-            });
+            return interaction.reply({ content: 'You have no assigned tasks! 🎉', flags: MessageFlags.Ephemeral });
         }
         
         let taskList = myTasks.map(t => `${t.originalIndex}. ${t.description}`).join('\n');

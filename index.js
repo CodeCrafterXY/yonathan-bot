@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const cron = require('node-cron');
+const mongoose = require('mongoose');
+const Task = require('./models/Task');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -25,7 +27,6 @@ for (const file of commandFiles) {
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     
-    // Register commands to Discord API
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     try {
         const commandData = client.commands.map(c => c.data.toJSON());
@@ -38,10 +39,19 @@ client.once('ready', async () => {
         console.error('Failed to register commands:', error);
     }
 
+    try{
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('Connected to MongoDB successfully!');
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+    }
+
     // We attach the job to client.reminderJob so we can stop it later
-    client.reminderJob = cron.schedule('0 9 * * *', () => {
+    client.reminderJob = cron.schedule('0 9 * * *', async () => {
         const channel = client.channels.cache.get(process.env.CHANNEL_ID);
-        if (channel && client.tasks.length > 0) {
+        const tasks = await Task.find().sort({ createdAt: 1 });
+
+        if (channel && tasks.length > 0) {
             let taskList = client.tasks.map((t, i) => {
                 if (t.assigneeId) return `${i + 1}. <@${t.assigneeId}> - ${t.description}`;
                 return `${i + 1}. ${t.description}`;
@@ -49,7 +59,7 @@ client.once('ready', async () => {
             channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
         }
     }, {
-        timezone: "Asia/Jakarta" // This forces the cron job to run in WIB
+        timezone: "Asia/Jakarta"
     });
 });
 

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const Task = require('../models/Task');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,18 +11,15 @@ module.exports = {
                 .setRequired(true)),
                 
     async execute(interaction) {
-        const tasks = interaction.client.tasks;
-        
         const index = interaction.options.getInteger('number') - 1;
+        const tasks = await Task.find().sort({ createdAt: 1 });
 
         if (index >= 0 && index < tasks.length) {
-            const completed = tasks.splice(index, 1)[0]; 
-            await interaction.reply(`🎉 Task completed: "${completed.description}"`);
+            const taskToDelete = tasks[index];
+            await Task.findByIdAndDelete(taskToDelete._id); 
+            await interaction.reply(`🎉 Task completed: "${taskToDelete.description}"`);
         } else {
-            await interaction.reply({ 
-                content: 'Invalid task number! Check your list with `/tasks`', 
-                flags: MessageFlags.Ephemeral 
-            });
+            await interaction.reply({ content: 'Invalid task number!', flags: MessageFlags.Ephemeral });
         }
     },
 };

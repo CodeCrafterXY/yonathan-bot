@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const Task = require('../models/Task');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,10 +12,10 @@ module.exports = {
         const taskDesc = interaction.options.getString('task');
         const assignee = interaction.options.getUser('assignee');
         
-        interaction.client.tasks.push({
+        await Task.create({
             description: taskDesc,
             assigneeId: assignee ? assignee.id : null
-        }); 
+        });
         
         if (assignee) {
             await interaction.reply({ content: `✅ Task added and assigned to ${assignee}: "${taskDesc}"` });
