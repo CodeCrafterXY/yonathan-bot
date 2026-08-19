@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord
 const cron = require('node-cron');
 const mongoose = require('mongoose');
 const Task = require('./models/Task');
+const Settings = require('./models/Settings');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -26,8 +27,11 @@ for (const file of commandFiles) {
 
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    
+
+    let reminderHour = 9;
+    let reminderMinute = 0;
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+
     try {
         const commandData = client.commands.map(c => c.data.toJSON());
         await rest.put(
@@ -46,21 +50,29 @@ client.once('ready', async () => {
         console.error('MongoDB connection error:', error);
     }
 
-    // We attach the job to client.reminderJob so we can stop it later
-    client.reminderJob = cron.schedule('0 9 * * *', async () => {
+    try {
+        const settings = await Settings.findOne({ settingId: 'global' });
+        if (settings) {
+            reminderHour = settings.reminderHour;
+            reminderMinute = settings.reminderMinute;
+            console.log(`Loaded custom reminder time: ${reminderHour}:${reminderMinute}`);
+        }
+    } catch (error) {
+        console.error('Failed to load settings:', error);
+    }
+
+    client.reminderJob = cron.schedule(`${reminderMinute} ${reminderHour} * * *`, async () => {
         const channel = client.channels.cache.get(process.env.CHANNEL_ID);
         const tasks = await Task.find().sort({ createdAt: 1 });
 
         if (channel && tasks.length > 0) {
-            let taskList = client.tasks.map((t, i) => {
-                if (t.assigneeId) return `${i + 1}. <@${t.assigneeId}> - ${t.description}`;
-                return `${i + 1}. ${t.description}`;
-            }).join('\n');
-            channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n${taskList}`);
+            let taskList = tasks.map((t, i) => {
+                const mention = t.assigneeId ? `<@${t.assigneeId}>` : '*Legacy Task*';
+                return `${i + 1}. **${t.description}** ━━ 👤 ${mention}`;
+            }).join('\n\n');
+            channel.send(`🔔 **Daily Task Reminder!**\nHere are your pending tasks:\n\n${taskList}`);
         }
-    }, {
-        timezone: "Asia/Jakarta"
-    });
+    }, { timezone: "Asia/Jakarta" });
 });
 
 client.on('interactionCreate', async interaction => {
